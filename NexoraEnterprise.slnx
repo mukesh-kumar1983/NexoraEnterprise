@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="NexoraEnterprise.API/NexoraEnterprise.API.csproj" Id="6668d72a-b974-4b4f-87f0-688090e2d979" />
+    <Project Path="NexoraEnterprise.Application/NexoraEnterprise.Application.csproj" Id="f7633c3c-d681-4de8-a25a-952f15a77732" />
+    <Project Path="NexoraEnterprise.Domain/NexoraEnterprise.Domain.csproj" />
+    <Project Path="NexoraEnterprise.Infrastructure/NexoraEnterprise.Infrastructure.csproj" Id="2e31960f-3adf-40b8-ae42-a6625fe45ed1" />
+  </Folder>
+</Solution>
