@@ -1,3 +1,5 @@
+using NexoraEnterprise.Infrastructure;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services
@@ -5,6 +7,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();      // Optional: built-in OpenAPI
 builder.Services.AddSwaggerGen();   // Swagger
+
+builder.Services.AddInfrastructure(builder.Configuration);
+
+
 
 var app = builder.Build();
 
