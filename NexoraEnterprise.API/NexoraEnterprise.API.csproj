@@ -20,4 +20,6 @@
     <ProjectReference Include="..\NexoraEnterprise.Infrastructure\NexoraEnterprise.Infrastructure.csproj" />
   </ItemGroup>
 
+  
+
 </Project>

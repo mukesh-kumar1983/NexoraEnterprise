@@ -1,3 +1,4 @@
+using NexoraEnterprise.API.Extensions;
 using NexoraEnterprise.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +22,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();      // Generates /swagger/v1/swagger.json
     app.UseSwaggerUI();    // Serves Swagger UI at /swagger
 }
+
+app.UseCorrelationId();
+
+app.UseRequestLogging();
+
+app.UseGlobalExceptionHandler();
 
 app.UseHttpsRedirection();
 

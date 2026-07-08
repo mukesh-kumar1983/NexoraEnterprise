@@ -5,4 +5,24 @@
     <Project Path="NexoraEnterprise.Domain/NexoraEnterprise.Domain.csproj" />
     <Project Path="NexoraEnterprise.Infrastructure/NexoraEnterprise.Infrastructure.csproj" Id="2e31960f-3adf-40b8-ae42-a6625fe45ed1" />
   </Folder>
+  <Folder Name="/src/docs/">
+    <File Path="08-Human-Resources-Domain.md" />
+    <File Path="FOUNDATION_V1.md" />
+    <File Path="PROJECT_STATE.md" />
+    <File Path="SolutionArchitecture.md" />
+  </Folder>
+  <Folder Name="/src/docs/Architecture Decision Records/">
+    <File Path="ADR-001.md" />
+    <File Path="ADR-002.md" />
+  </Folder>
+  <Folder Name="/src/docs/Domain Models/">
+    <File Path="01-Introduction.md" />
+    <File Path="02-Vision-and-Objectives.md" />
+    <File Path="03-Architectural-Principles.md" />
+    <File Path="04-Bounded-Contexts.md" />
+    <File Path="05-Core-Domain.md" />
+    <File Path="06-Tenant-Domain.md" />
+    <File Path="07-Identity-and-Access-Management.md" />
+    <File Path="README.md" />
+  </Folder>
 </Solution>

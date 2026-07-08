@@ -12,7 +12,7 @@ namespace NexoraEnterprise.Domain.Common;
 /// </remarks>
 public abstract class AggregateRoot : Entity
 {
-    private readonly List<IDomainEvent> _domainEvents = [];
+    private readonly List<IDomainEvent> _domainEvents = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AggregateRoot"/> class.
@@ -67,7 +67,7 @@ public abstract class AggregateRoot : Entity
     /// <summary>
     /// Indicates whether this aggregate has pending domain events.
     /// </summary>
-    public bool HasDomainEvents => _domainEvents.Count > 0;
+    public bool HasDomainEvents => _domainEvents.Count != 0;
 
     protected static void CheckRule(IBusinessRule rule)
     {

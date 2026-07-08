@@ -7,6 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="MediatR" Version="14.2.0" />
+    
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -21,8 +24,11 @@
   <ItemGroup>
     <Folder Include="Email\" />
     <Folder Include="Identity\" />
-    <Folder Include="Services\" />
     <Folder Include="Storage\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NexoraEnterprise.Application\NexoraEnterprise.Application.csproj" />
   </ItemGroup>
 
 </Project>
