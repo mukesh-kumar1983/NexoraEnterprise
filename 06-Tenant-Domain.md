@@ -1,8 +1,8 @@
 # 06 - Tenant Domain
 
-**Version:** 1.0
+**Version:** 1.1
 **Status:** Active
-**Last Updated:** July 5, 2026
+**Last Updated:** July 12, 2026
 
 ---
 
@@ -83,12 +83,16 @@ No external component may modify tenant state directly.
 ```text
 Tenant
 │
-├── Identity
-├── Business Information
-├── Contact Information
-├── Subscription Information
+├── Id (Guid Version 7)
+├── Code
+├── Name
 ├── Status
-└── Settings
+├── Audit Information
+│   ├── CreatedOnUtc
+│   ├── ModifiedOnUtc
+│   ├── DeletedOnUtc
+│   └── IsDeleted
+└── Domain Events
 ```
 
 The aggregate protects the consistency of all tenant-related business data.
@@ -167,18 +171,18 @@ independently.
 A Tenant progresses through the following lifecycle.
 
 ```text
-Created
-    │
-    ▼
+Pending
+   │
+   ▼
 Active
-    │
-    ├────────────► Suspended
-    │                  │
-    │                  ▼
-    │               Reactivated
-    │
-    ▼
-Archived
+   │
+   ├────────► Suspended
+   │
+   ▼
+Inactive
+   │
+   ▼
+Deleted (Soft Delete)
 ```
 
 Only valid business transitions are permitted.
@@ -204,7 +208,23 @@ Business operations are permitted only for Active tenants unless explicitly stat
 
 # Business Rules
 
-The Tenant aggregate enforces the following business rules.
+Implemented
+
+- Tenant name cannot be empty.
+- Tenant name length must be valid.
+- Tenant code cannot be empty.
+- Tenant code length must be valid.
+- Tenant code format must be valid.
+- Tenant code is normalized to uppercase.
+- Aggregate enforces all business rules before state changes.
+
+Planned
+
+- Unique tenant code.
+- Unique legal business registration.
+- Email validation.
+- Country validation.
+- Subscription validation.
 
 ## Identity
 
@@ -240,18 +260,22 @@ The Tenant aggregate enforces the following business rules.
 
 # Domain Events
 
-The following domain events may be raised by the Tenant aggregate.
+Current implementation:
 
-- TenantRegistered
+- TenantCreated
+- TenantRenamed
+- TenantCodeChanged
 - TenantActivated
 - TenantSuspended
-- TenantReactivated
-- TenantArchived
+- TenantDeactivated
+- TenantDeleted
+
+Future events:
+
 - TenantProfileUpdated
 - TenantSubscriptionChanged
 - TenantLogoUpdated
-
-These events communicate significant business occurrences to other parts of the platform.
+- TenantSettingsChanged
 
 ---
 
@@ -351,9 +375,19 @@ defining users, roles, permissions, and authentication.
 
 # Summary
 
-The Tenant Domain is the foundation of the NexoraEnterprise platform.
+Implementation Status
 
-It establishes business ownership, tenant isolation, and the lifecycle of every organization using the system.
+✓ Tenant Aggregate
+✓ Domain Foundation
+✓ Business Rules
+✓ Domain Events
+✓ Auditing Support
+✓ Soft Delete Support
 
-Every tenant-specific business capability ultimately derives its ownership and security boundary from the
-Tenant aggregate, making it the cornerstone of the platform's architecture.
+Planned
+
+- Contact Information
+- Subscription
+- Settings
+- Branding
+- Billing

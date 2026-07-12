@@ -1,4 +1,5 @@
-﻿using NexoraEnterprise.Domain.Common;
+﻿
+using NexoraEnterprise.Domain.Common;
 using NexoraEnterprise.Domain.Enums;
 using NexoraEnterprise.Domain.Events.Tenants;
 using NexoraEnterprise.Domain.Rules.Tenants;
@@ -7,21 +8,11 @@ namespace NexoraEnterprise.Domain.Entities.Tenants;
 
 /// <summary>
 /// Represents a tenant (company) within the NexoraEnterprise platform.
-///
-/// A tenant is the highest business boundary in the system.
-/// Every user, employee, department, branch, customer and other business
-/// entities belong to exactly one tenant.
-///
-/// Responsibilities:
-/// - Maintain tenant identity.
-/// - Control tenant lifecycle.
-/// - Enforce business rules.
-/// - Raise domain events.
+/// This is Part 1 of the complete aggregate.
 /// </summary>
-public sealed class Tenant : AuditableAggregateRoot
+public sealed partial class Tenant : AuditableAggregateRoot<Guid>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="Tenant"/> class.
     /// Required by Entity Framework Core.
     /// </summary>
     private Tenant()
@@ -29,20 +20,12 @@ public sealed class Tenant : AuditableAggregateRoot
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Tenant"/> class.
+    /// Initializes a new tenant with the specified identifier.
     /// </summary>
-    /// <param name="code">Unique tenant code.</param>
-    /// <param name="name">Tenant name.</param>
-    private Tenant(string code, string name)
+    /// <param name="id">Tenant identifier.</param>
+    private Tenant(Guid id)
     {
-        CheckRule(new TenantCodeCannotBeEmptyRule(code));
-        CheckRule(new TenantNameCannotBeEmptyRule(name));
-
-        Code = NormalizeCode(code);
-        Name = NormalizeName(name);
-
-        Status = TenantStatus.Pending;
-        RegisteredOn = DateTimeOffset.UtcNow;
+        Id = id;
     }
 
     /// <summary>
@@ -61,21 +44,24 @@ public sealed class Tenant : AuditableAggregateRoot
     public TenantStatus Status { get; private set; }
 
     /// <summary>
-    /// Gets the date and time when the tenant was registered.
+    /// Creates a new tenant.
     /// </summary>
-    public DateTimeOffset RegisteredOn { get; private set; }
-
-    /// <summary>
-    /// Registers a new tenant.
-    /// </summary>
-    /// <param name="code">Unique tenant code.</param>
-    /// <param name="name">Tenant name.</param>
-    /// <returns>A newly created tenant.</returns>
-    public static Tenant Register(string code, string name)
+    public static Tenant Create(string code, string name)
     {
-        var tenant = new Tenant(code, name);
+        var tenant = new Tenant(Guid.CreateVersion7());
 
-        tenant.RaiseDomainEvent(new TenantRegisteredEvent(tenant.Id));
+        tenant.SetCode(code);
+        tenant.SetName(name);
+
+        tenant.Status = TenantStatus.Pending;
+
+        tenant.MarkCreated();
+
+        tenant.RaiseDomainEvent(
+    new TenantCreatedDomainEvent(
+        tenant.Id,
+        tenant.Code,
+        tenant.Name));
 
         return tenant;
     }
@@ -83,72 +69,74 @@ public sealed class Tenant : AuditableAggregateRoot
     /// <summary>
     /// Renames the tenant.
     /// </summary>
-    /// <param name="name">New tenant name.</param>
+    /// <param name="name">
+    /// The new tenant name.
+    /// </param>
     public void Rename(string name)
+    {
+        var oldName = Name;
+
+        SetName(name);
+
+        if (oldName == Name)
+        {
+            return;
+        }
+
+        MarkModified();
+
+        RaiseDomainEvent(
+            new TenantRenamedEvent(
+                Id,
+                oldName,
+                Name));
+    }
+
+    /// <summary>
+    /// Changes the tenant code.
+    /// </summary>
+    /// <param name="code">
+    /// The new tenant code.
+    /// </param>
+    public void ChangeCode(string code)
+    {
+        var oldCode = Code;
+
+        SetCode(code);
+
+        if (oldCode == Code)
+        {
+            return;
+        }
+
+        MarkModified();
+
+        RaiseDomainEvent(
+            new TenantCodeChangedEvent(
+                Id,
+                oldCode,
+                Code));
+    }
+
+    /// <summary>
+    /// Sets the tenant code.
+    /// </summary>
+    /// <param name="code">Tenant code.</param>
+    private void SetCode(string code)
+    {
+        CheckRule(new TenantCodeCannotBeEmptyRule(code));
+
+        Code = code.Trim().ToUpperInvariant();
+    }
+
+    /// <summary>
+    /// Sets the tenant name.
+    /// </summary>
+    /// <param name="name">Tenant name.</param>
+    private void SetName(string name)
     {
         CheckRule(new TenantNameCannotBeEmptyRule(name));
 
-        Name = NormalizeName(name);
-    }
-
-    /// <summary>
-    /// Activates the tenant.
-    /// </summary>
-    public void Activate()
-    {
-        CheckRule(new TenantCannotBeActivatedWhenInactiveRule(Status));
-
-        if (Status == TenantStatus.Active)
-            return;
-
-        Status = TenantStatus.Active;
-
-        RaiseDomainEvent(new TenantActivatedEvent(Id));
-    }
-
-    /// <summary>
-    /// Suspends the tenant.
-    /// </summary>
-    public void Suspend()
-    {
-        if (Status == TenantStatus.Suspended)
-            return;
-
-        Status = TenantStatus.Suspended;
-
-        RaiseDomainEvent(new TenantSuspendedEvent(Id));
-    }
-
-    /// <summary>
-    /// Permanently deactivates the tenant.
-    /// </summary>
-    public void Deactivate()
-    {
-        if (Status == TenantStatus.Inactive)
-            return;
-
-        Status = TenantStatus.Inactive;
-
-        RaiseDomainEvent(new TenantDeactivatedEvent(Id));
-    }
-
-    /// <summary>
-    /// Normalizes the tenant code.
-    /// </summary>
-    /// <param name="code">Tenant code.</param>
-    /// <returns>Normalized tenant code.</returns>
-    private static string NormalizeCode(string code)
-    {
-        return code.Trim().ToUpperInvariant();
-    }
-
-    /// <summary>
-    /// Normalizes the tenant name.
-    /// </summary>
-    /// <param name="name">Tenant name.</param>
-    /// <returns>Normalized tenant name.</returns>
-    private static string NormalizeName(string name)
-    {
-        return name.Trim();
+        Name = name.Trim();
     }
 }

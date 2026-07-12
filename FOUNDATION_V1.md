@@ -1,8 +1,8 @@
 # NexoraEnterprise Foundation v1.0
 
-**Status:** Approved
-**Version:** 1.0
-**Date:** July 2026
+**Status:** Approved (Frozen)
+**Version:** 1.2
+**Date:** July 12, 2026
 
 ---
 
@@ -10,16 +10,15 @@
 
 This document defines the architectural foundation of NexoraEnterprise.
 
-The purpose of this document is to:
+Its purpose is to:
 
-- Keep the architecture consistent.
+- Establish a consistent architecture across the solution.
 - Prevent unnecessary redesigns.
 - Record architectural decisions.
-- Provide guidance for future development.
-- Ensure all modules follow the same standards.
+- Guide future development.
+- Ensure every module follows the same engineering standards.
 
-This document is considered frozen unless a genuine architectural defect, security issue,
-correctness issue, or proven performance issue is discovered.
+This document is considered **frozen**. Architectural changes are permitted only when a genuine architectural defect, security vulnerability, correctness issue, or proven performance issue has been identified.
 
 ---
 
@@ -34,11 +33,11 @@ correctness issue, or proven performance issue is discovered.
 - ASP.NET Identity
 - JWT Authentication
 - FluentValidation
-- MediatR (hidden behind an application abstraction)
+- MediatR (behind an application abstraction)
 
 ## Frontend
 
-- Angular 17+ Standalone
+- Angular 20+ (Standalone)
 
 ## Architecture
 
@@ -52,20 +51,20 @@ correctness issue, or proven performance issue is discovered.
 
 # Core Architectural Principles
 
-- Domain first.
-- Business rules belong in the Domain.
-- Infrastructure never leaks into Domain.
+- Domain-first development.
+- Business rules belong exclusively in the Domain layer.
+- Infrastructure must never leak into the Domain.
 - Application depends only on abstractions.
 - Controllers remain thin.
-- Manual mapping only.
-- Build only what is needed (YAGNI).
-- Favor simplicity over unnecessary abstractions.
+- Manual mapping throughout the solution.
+- Build only what is required (YAGNI).
+- Prefer simplicity over unnecessary abstractions.
 
 ---
 
 # Project Structure
 
-```
+```text
 src/
     NexoraEnterprise.API
     NexoraEnterprise.Application
@@ -83,11 +82,11 @@ docs/
 
 ---
 
-# Domain
+# Domain Layer
 
-The Domain project must remain independent.
+The Domain project is the heart of the application and must remain completely independent.
 
-It must not reference:
+The Domain project must never reference:
 
 - Entity Framework Core
 - ASP.NET Core
@@ -98,16 +97,35 @@ It must not reference:
 - Azure SDK
 - Logging frameworks
 
-Domain building blocks:
+## Domain Foundation
 
-- Entity
-- BaseEntity
-- AggregateRoot
+The Domain layer is built upon the following foundational building blocks:
+
+### Common
+
+- Entity<TId>
+- AggregateRoot<TId>
+- AuditableAggregateRoot<TId>
 - ValueObject
-- Domain Events
-- Business Rules
 
-Specifications and Domain Services will only be introduced when genuinely required.
+### Events
+
+- IDomainEvent
+- DomainEvent
+
+### Rules
+
+- IBusinessRule
+- BusinessRule
+- BusinessRuleValidationException
+
+### Exceptions
+
+- DomainException
+
+These classes form the permanent foundation of the Domain Model.
+
+Specifications, Domain Services, Policies, and additional patterns will only be introduced when justified by business requirements.
 
 ---
 
@@ -115,16 +133,31 @@ Specifications and Domain Services will only be introduced when genuinely requir
 
 One Tenant represents exactly one Organization.
 
-All business data belongs to a single Tenant.
+Every business resource belongs to exactly one Tenant.
 
-The current platform is designed to support:
+Examples include:
+
+- Employees
+- Departments
+- Customers
+- Vendors
+- Products
+- Sales
+- Financial Records
+
+Every tenant-owned aggregate stores a TenantId to ensure complete logical isolation.
+
+The architecture is designed to support multiple business verticals including:
 
 - Customs Management
 - Human Resources
 - Law Firm Management
 - Private Clinics
+- ERP
+- CRM
+- Retail & POS
 
-without changing the architecture.
+without requiring architectural changes.
 
 ---
 
@@ -132,23 +165,24 @@ without changing the architecture.
 
 The Application layer owns:
 
-- CQRS contracts
-- Repository contracts
-- Unit of Work abstraction
+- CQRS Contracts
+- Repository Contracts
+- Unit of Work
 - Current User abstraction
+- Current Tenant abstraction
 - Date/Time abstraction
 - Validation
-- Result pattern
+- Result Pattern
 
 The Application layer must not reference MediatR directly.
 
-A request dispatcher abstraction is used instead.
+Instead, requests are dispatched through an application abstraction.
 
 ---
 
 # Result Pattern
 
-The application uses a Result / Result<T> pattern.
+The application uses a strongly typed Result pattern.
 
 The Result pattern provides:
 
@@ -157,40 +191,49 @@ The Result pattern provides:
 - Strongly typed Errors
 - ErrorType classification
 
-Business logic should return Results rather than throwing exceptions for expected
-business outcomes.
+Expected business outcomes should return Results.
+
+Exceptions are reserved for unexpected or exceptional situations.
 
 ---
 
-# Validation
+# Validation Strategy
 
-Validation responsibilities are divided as follows:
+Validation responsibilities are divided as follows.
 
-- FluentValidation validates requests.
-- Domain Business Rules enforce business invariants.
-- Unexpected failures are handled by global exception handling.
+## FluentValidation
+
+Validates incoming requests.
+
+## Domain Business Rules
+
+Protect aggregate invariants.
+
+## Global Exception Handling
+
+Handles unexpected failures and converts them into consistent API responses.
 
 ---
 
 # Infrastructure
 
-Infrastructure owns:
+Infrastructure owns all external integrations including:
 
 - Entity Framework Core
 - ASP.NET Identity
 - SQL Server
 - Azure Blob Storage
-- SMTP Email
+- SMTP
 - RabbitMQ
 - JWT implementation
 
-Infrastructure implements all interfaces defined by the Application layer.
+Infrastructure implements every interface defined by the Application layer.
 
 ---
 
 # API
 
-The API uses:
+The API layer provides:
 
 - Controllers
 - JWT Authentication
@@ -206,21 +249,22 @@ Domain entities are never exposed directly.
 
 # Coding Standards
 
+The following standards apply throughout the solution.
+
 - Complete files only.
-- Copy-paste ready code.
+- Copy-and-paste ready code.
 - Enterprise-grade implementation.
-- One class per file (except tightly coupled generic companion types such as Result
-  and Result<T>).
-- XML documentation on public members.
-- Async APIs throughout.
+- One class per file.
+- XML documentation on all public members.
+- Async APIs.
 - Manual mapping.
 - Minimal controller logic.
 
 ---
 
-# Deferred Until Needed
+# Deferred Until Required
 
-The following are intentionally postponed:
+The following technologies are intentionally postponed.
 
 - Microservices
 - Shared Kernel
@@ -235,29 +279,70 @@ The following are intentionally postponed:
 - Localization
 - AutoMapper
 
-These technologies will only be introduced when justified by business requirements.
+These technologies will only be introduced when justified by real business requirements.
+
+---
+
+# Current Implementation Status
+
+Completed:
+
+- Domain Foundation
+- Entity<TId>
+- AggregateRoot<TId>
+- AuditableAggregateRoot<TId>
+- ValueObject
+- Domain Events Infrastructure
+- Business Rules Infrastructure
+- Tenant Aggregate
+- Tenant Business Rules
+- Tenant Domain Events
+
+Next:
+
+- Module Aggregate
+- Subscription Aggregate
+- Identity & Access Management
 
 ---
 
 # Foundation Freeze
 
-The following architectural decisions are considered frozen:
+The following architectural decisions are permanently locked for Foundation v1.
+
+## Architecture
 
 - Clean Architecture
-- DDD
+- Domain-Driven Design
 - CQRS
 - Modular Monolith
-- One Tenant = One Organization
-- Manual Mapping
-- ASP.NET Identity
-- JWT Authentication
+- Multi-Tenant SaaS
+
+## Domain
+
+- Entity<TId>
+- AggregateRoot<TId>
+- AuditableAggregateRoot<TId>
+- ValueObject
+- Domain Events
+- Business Rules
+
+## Data
+
 - Entity Framework Core
 - SQL Server
-- Angular Standalone
-- MediatR behind an abstraction
-- Result Pattern
 - Repository Pattern
 - Unit of Work
+
+## Identity
+
+- ASP.NET Identity
+- JWT Authentication
+
+## Frontend
+
+- Angular Standalone
+- Manual Mapping
 
 Architectural changes are permitted only when one of the following applies:
 
@@ -266,5 +351,4 @@ Architectural changes are permitted only when one of the following applies:
 3. A proven performance issue.
 4. A genuine architectural defect.
 
-All other improvements will be considered for future versions rather than changing
-Foundation v1.0.
+All other improvements will be considered in future foundation versions rather than modifying Foundation v1.

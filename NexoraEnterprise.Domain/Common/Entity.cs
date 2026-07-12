@@ -1,48 +1,40 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿// -----------------------------------------------------------------------------
+// Project : NexoraEnterprise
+// Layer   : Domain
+// Module  : Common
+// File    : Entity.cs
+// -----------------------------------------------------------------------------
+// <copyright>
+// Copyright (c) NexoraEnterprise.
+// </copyright>
+// -----------------------------------------------------------------------------
 
 namespace NexoraEnterprise.Domain.Common;
 
 /// <summary>
-/// Represents the base class for all entities within the domain.
+/// Represents the base class for all domain entities.
 /// </summary>
-/// <remarks>
-/// An entity is uniquely identified by its <see cref="Id"/> rather than
-/// by the values of its properties.
-/// </remarks>
-public abstract class Entity : IEquatable<Entity>
+/// <typeparam name="TId">The type of the entity identifier.</typeparam>
+public abstract class Entity<TId> : IEquatable<Entity<TId>>
+    where TId : notnull
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="Entity"/> class.
-    /// A Version 7 GUID is generated automatically.
-    /// </summary>
-    protected Entity()
-    {
-        Id = Guid.CreateVersion7();
-    }
-
-    protected Entity(Guid id)
-    {
-        Id = id;
-    }
-
     /// <summary>
     /// Gets the unique identifier of the entity.
     /// </summary>
-    public Guid Id { get; protected init; }
+    public TId Id { get; protected set; } = default!;
 
     /// <summary>
-    /// Determines whether this entity is transient.
+    /// Determines whether the entity has not yet been assigned an identifier.
     /// </summary>
-    public bool IsTransient => Id == default;
+    public bool IsTransient()
+        => EqualityComparer<TId>.Default.Equals(Id, default!);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override bool Equals(object? obj)
-    {
-        return Equals(obj as Entity);
-    }
+        => Equals(obj as Entity<TId>);
 
-    /// <inheritdoc />
-    public bool Equals(Entity? other)
+    /// <inheritdoc/>
+    public bool Equals(Entity<TId>? other)
     {
         if (other is null)
             return false;
@@ -53,39 +45,21 @@ public abstract class Entity : IEquatable<Entity>
         if (GetType() != other.GetType())
             return false;
 
-        if (IsTransient || other.IsTransient)
+        if (IsTransient() || other.IsTransient())
             return false;
 
-        return Id == other.Id;
+        return EqualityComparer<TId>.Default.Equals(Id, other.Id);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override int GetHashCode()
-    {
-        return HashCode.Combine(GetType(), Id);
-    }
+        => IsTransient()
+            ? base.GetHashCode()
+            : HashCode.Combine(GetType(), Id);
 
-    /// <summary>
-    /// Determines whether two entities are equal.
-    /// </summary>
-    public static bool operator ==(Entity? left, Entity? right)
-    {
-        return EqualityComparer<Entity>.Default.Equals(left, right);
-    }
+    public static bool operator ==(Entity<TId>? left, Entity<TId>? right)
+        => Equals(left, right);
 
-    /// <summary>
-    /// Determines whether two entities are not equal.
-    /// </summary>
-    public static bool operator !=(Entity? left, Entity? right)
-    {
-        return !(left == right);
-    }
-
-    /// <summary>
-    /// Returns the string representation of the entity.
-    /// </summary>
-    public override string ToString()
-    {
-        return $"{GetType().Name} [Id={Id}]";
-    }
+    public static bool operator !=(Entity<TId>? left, Entity<TId>? right)
+        => !(left == right);
 }

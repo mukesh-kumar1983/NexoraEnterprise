@@ -2,7 +2,7 @@
 using NexoraEnterprise.Application.Common.Interfaces;
 using NexoraEnterprise.Application.Common.Options;
 
-namespace NexoraEnterprise.Infrastructure.Configuration;
+namespace NexoraEnterprise.Infrastructure.Persistence.Configurations;
 
 /// <summary>
 /// Provides performance configuration from application settings.

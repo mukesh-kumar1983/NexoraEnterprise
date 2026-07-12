@@ -1,44 +1,43 @@
-﻿using NexoraEnterprise.Domain.Events;
+﻿// -----------------------------------------------------------------------------
+// Project : NexoraEnterprise
+// Layer   : Domain
+// Module  : Common
+// File    : AggregateRoot.cs
+// -----------------------------------------------------------------------------
+
+using NexoraEnterprise.Domain.Events;
 using NexoraEnterprise.Domain.Rules;
 
 namespace NexoraEnterprise.Domain.Common;
 
 /// <summary>
 /// Represents the root of an aggregate in Domain-Driven Design (DDD).
+///
+/// An aggregate root is the only entry point through which external code
+/// may modify an aggregate. It is responsible for enforcing business
+/// invariants and raising domain events.
 /// </summary>
-/// <remarks>
-/// An aggregate root is the only entity through which external code
-/// should modify entities belonging to the aggregate.
-/// </remarks>
-public abstract class AggregateRoot : Entity
+/// <typeparam name="TId">
+/// The type of the aggregate identifier.
+/// </typeparam>
+public abstract class AggregateRoot<TId>
+    : Entity<TId>, IDomainEventAggregate
+    where TId : notnull
 {
     private readonly List<IDomainEvent> _domainEvents = new();
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AggregateRoot"/> class.
-    /// </summary>
-    protected AggregateRoot()
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AggregateRoot"/> class
-    /// with the specified identifier.
-    /// </summary>
-    protected AggregateRoot(Guid id)
-        : base(id)
-    {
-    }
-
-    /// <summary>
     /// Gets the domain events raised by this aggregate.
     /// </summary>
-    public IReadOnlyCollection<IDomainEvent> DomainEvents
-        => _domainEvents.AsReadOnly();
+    public IReadOnlyCollection<IDomainEvent> DomainEvents =>
+        _domainEvents.AsReadOnly();
 
     /// <summary>
-    /// Raise a domain event.
+    /// Raises a domain event.
     /// </summary>
+    /// <param name="domainEvent">
+    /// The domain event to raise.
+    /// </param>
     protected void RaiseDomainEvent(IDomainEvent domainEvent)
     {
         ArgumentNullException.ThrowIfNull(domainEvent);
@@ -47,17 +46,7 @@ public abstract class AggregateRoot : Entity
     }
 
     /// <summary>
-    /// Removes a domain event.
-    /// </summary>
-    protected void RemoveDomainEvent(IDomainEvent domainEvent)
-    {
-        ArgumentNullException.ThrowIfNull(domainEvent);
-
-        _domainEvents.Remove(domainEvent);
-    }
-
-    /// <summary>
-    /// Clears all domain events.
+    /// Removes all pending domain events.
     /// </summary>
     public void ClearDomainEvents()
     {
@@ -65,12 +54,18 @@ public abstract class AggregateRoot : Entity
     }
 
     /// <summary>
-    /// Indicates whether this aggregate has pending domain events.
+    /// Verifies that the specified business rule is satisfied.
     /// </summary>
-    public bool HasDomainEvents => _domainEvents.Count != 0;
-
+    /// <param name="rule">
+    /// The business rule to evaluate.
+    /// </param>
+    /// <exception cref="BusinessRuleValidationException">
+    /// Thrown when the business rule is violated.
+    /// </exception>
     protected static void CheckRule(IBusinessRule rule)
     {
+        ArgumentNullException.ThrowIfNull(rule);
+
         if (rule.IsBroken())
         {
             throw new BusinessRuleValidationException(rule);

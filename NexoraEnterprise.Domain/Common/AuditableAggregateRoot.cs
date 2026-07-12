@@ -1,51 +1,88 @@
-﻿namespace NexoraEnterprise.Domain.Common;
+﻿
+// -----------------------------------------------------------------------------
+// Project : NexoraEnterprise
+// Layer   : Domain
+// Module  : Common
+// File    : AuditableAggregateRoot.cs
+// -----------------------------------------------------------------------------
+//
+// Represents the base class for aggregate roots that support
+// auditing information and soft deletion.
+//
+// -----------------------------------------------------------------------------
+
+namespace NexoraEnterprise.Domain.Common;
 
 /// <summary>
 /// Represents an aggregate root that supports auditing and soft deletion.
 /// </summary>
-public abstract class AuditableAggregateRoot : AggregateRoot
+/// <typeparam name="TId">
+/// The type of the aggregate identifier.
+/// </typeparam>
+public abstract class AuditableAggregateRoot<TId> : AggregateRoot<TId>
+    where TId : notnull
 {
-    protected AuditableAggregateRoot()
+    /// <summary>
+    /// Gets the UTC date and time when the aggregate was created.
+    /// </summary>
+    public DateTimeOffset CreatedOnUtc { get; protected set; }
+
+    /// <summary>
+    /// Gets the UTC date and time when the aggregate was last modified.
+    /// </summary>
+    public DateTimeOffset? ModifiedOnUtc { get; protected set; }
+
+    /// <summary>
+    /// Gets the UTC date and time when the aggregate was soft deleted.
+    /// </summary>
+    public DateTimeOffset? DeletedOnUtc { get; protected set; }
+
+    /// <summary>
+    /// Gets a value indicating whether the aggregate has been soft deleted.
+    /// </summary>
+    public bool IsDeleted { get; protected set; }
+
+    /// <summary>
+    /// Marks the aggregate as newly created.
+    /// </summary>
+    protected void MarkCreated()
     {
+        CreatedOnUtc = DateTimeOffset.UtcNow;
+        ModifiedOnUtc = null;
+        DeletedOnUtc = null;
+        IsDeleted = false;
     }
 
-    protected AuditableAggregateRoot(Guid id)
-        : base(id)
+    /// <summary>
+    /// Marks the aggregate as modified.
+    /// </summary>
+    protected void MarkModified()
     {
+        ModifiedOnUtc = DateTimeOffset.UtcNow;
     }
 
     /// <summary>
-    /// Gets the UTC date and time when the entity was created.
+    /// Marks the aggregate as soft deleted.
     /// </summary>
-    public DateTimeOffset CreatedOn { get; internal set; }
+    protected void MarkDeleted()
+    {
+        if (IsDeleted)
+        {
+            return;
+        }
+
+        IsDeleted = true;
+        DeletedOnUtc = DateTimeOffset.UtcNow;
+        MarkModified();
+    }
 
     /// <summary>
-    /// Gets the identifier of the user who created the entity.
+    /// Restores a previously soft-deleted aggregate.
     /// </summary>
-    public Guid? CreatedBy { get; internal set; }
-
-    /// <summary>
-    /// Gets the UTC date and time when the entity was last modified.
-    /// </summary>
-    public DateTimeOffset? ModifiedOn { get; internal set; }
-
-    /// <summary>
-    /// Gets the identifier of the user who last modified the entity.
-    /// </summary>
-    public Guid? ModifiedBy { get; internal set; }
-
-    /// <summary>
-    /// Gets the UTC date and time when the entity was soft deleted.
-    /// </summary>
-    public DateTimeOffset? DeletedOn { get; internal set; }
-
-    /// <summary>
-    /// Gets the identifier of the user who soft deleted the entity.
-    /// </summary>
-    public Guid? DeletedBy { get; internal set; }
-
-    /// <summary>
-    /// Gets a value indicating whether the entity has been soft deleted.
-    /// </summary>
-    public bool IsDeleted { get; internal set; }
+    protected void Restore()
+    {
+        IsDeleted = false;
+        DeletedOnUtc = null;
+        MarkModified();
+    }
 }

@@ -8,8 +8,7 @@ namespace NexoraEnterprise.Infrastructure.Persistence.Configurations;
 /// <summary>
 /// Configures the Tenant aggregate.
 /// </summary>
-public sealed class TenantConfiguration
-    : IEntityTypeConfiguration<Tenant>
+public sealed class TenantConfiguration : IEntityTypeConfiguration<Tenant>
 {
     public void Configure(EntityTypeBuilder<Tenant> builder)
     {
@@ -28,21 +27,12 @@ public sealed class TenantConfiguration
         builder.Property(x => x.Status)
             .IsRequired();
 
-        builder.Property(x => x.RegisteredOn)
+        builder.Property(x => x.CreatedOnUtc)
             .IsRequired();
 
-        builder.Property(x => x.CreatedOn)
-            .IsRequired();
+        builder.Property(x => x.ModifiedOnUtc);
 
-        builder.Property(x => x.CreatedBy);
-
-        builder.Property(x => x.ModifiedOn);
-
-        builder.Property(x => x.ModifiedBy);
-
-        builder.Property(x => x.DeletedOn);
-
-        builder.Property(x => x.DeletedBy);
+        builder.Property(x => x.DeletedOnUtc);
 
         builder.Property(x => x.IsDeleted)
             .HasDefaultValue(false);

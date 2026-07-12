@@ -50,7 +50,7 @@ public sealed class CreateTenantCommandHandler
                     $"A tenant with code '{command.Code}' already exists."));
         }
 
-        Tenant tenant = Tenant.Register(
+        Tenant tenant = Tenant.Create(
             command.Code,
             command.Name);
 
@@ -67,8 +67,7 @@ public sealed class CreateTenantCommandHandler
                 Id = tenant.Id,
                 Code = tenant.Code,
                 Name = tenant.Name,
-                Status = tenant.Status,
-                RegisteredOn = tenant.RegisteredOn
+                Status = tenant.Status
             });
     }
 }

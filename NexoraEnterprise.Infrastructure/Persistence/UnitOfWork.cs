@@ -6,23 +6,21 @@ namespace NexoraEnterprise.Infrastructure.Persistence;
 /// <summary>
 /// Default implementation of the Unit of Work pattern.
 /// </summary>
+using NexoraEnterprise.Application.Common.Interfaces;
+
+
+
 public sealed class UnitOfWork : IUnitOfWork
 {
-    private readonly ApplicationDbContext _dbContext;
+    private readonly ApplicationDbContext _context;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="UnitOfWork"/> class.
-    /// </summary>
-    /// <param name="dbContext">Application database context.</param>
-    public UnitOfWork(ApplicationDbContext dbContext)
+    public UnitOfWork(ApplicationDbContext context)
     {
-        _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        _context = context;
     }
 
-    /// <inheritdoc />
-    public Task<int> SaveChangesAsync(
-        CancellationToken cancellationToken = default)
+    public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        return _dbContext.SaveChangesAsync(cancellationToken);
+        return _context.SaveChangesAsync(cancellationToken);
     }
 }

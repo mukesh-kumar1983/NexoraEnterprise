@@ -1,18 +1,30 @@
-﻿using NexoraEnterprise.Domain.Exceptions;
+﻿// -----------------------------------------------------------------------------
+// Project : NexoraEnterprise
+// Layer   : Domain
+// Module  : Rules
+// File    : BusinessRuleValidationException.cs
+// -----------------------------------------------------------------------------
+
+using NexoraEnterprise.Domain.Exceptions;
 
 namespace NexoraEnterprise.Domain.Rules;
 
 /// <summary>
-/// The exception that is thrown when a business rule is violated.
+/// Exception thrown when a business rule has been violated.
 /// </summary>
 public sealed class BusinessRuleValidationException : DomainException
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="BusinessRuleValidationException"/> class.
+    /// Initializes a new instance of the
+    /// <see cref="BusinessRuleValidationException"/> class.
     /// </summary>
-    /// <param name="brokenRule">The violated business rule.</param>
-    public BusinessRuleValidationException(IBusinessRule brokenRule)
-        : base(brokenRule.Message)
+    /// <param name="brokenRule">
+    /// The violated business rule.
+    /// </param>
+    public BusinessRuleValidationException(
+        IBusinessRule brokenRule)
+        : base(brokenRule?.Message
+            ?? throw new ArgumentNullException(nameof(brokenRule)))
     {
         BrokenRule = brokenRule;
     }

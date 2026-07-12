@@ -4,8 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using NexoraEnterprise.Application.Abstractions.Persistence;
 using NexoraEnterprise.Application.Common.Interfaces;
 using NexoraEnterprise.Application.Common.Options;
-using NexoraEnterprise.Infrastructure.Configuration;
 using NexoraEnterprise.Infrastructure.Persistence;
+using NexoraEnterprise.Infrastructure.Persistence.Configurations;
 using NexoraEnterprise.Infrastructure.Persistence.Repositories;
 using NexoraEnterprise.Infrastructure.Services;
 
@@ -32,10 +32,13 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddDbContext<ApplicationDbContext>(options =>
+        services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             options.UseSqlServer(
                 configuration.GetConnectionString("DefaultConnection"));
+
+            //options.AddInterceptors(
+            //    sp.GetRequiredService<AuditInterceptor>());
         });
 
         services.AddHttpContextAccessor();
@@ -58,6 +61,10 @@ public static class DependencyInjection
         configuration.GetSection(PerformanceOptions.SectionName));
 
         services.AddSingleton<IPerformanceConfiguration, PerformanceConfiguration>();
+
+        services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+
+        //services.AddScoped<AuditInterceptor>();
 
         //services.AddScoped<IUnitOfWork>(sp =>
         //sp.GetRequiredService<ApplicationDbContext>());

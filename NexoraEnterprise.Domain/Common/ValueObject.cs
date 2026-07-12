@@ -1,46 +1,64 @@
-﻿namespace NexoraEnterprise.Domain.Common;
+﻿
+// -----------------------------------------------------------------------------
+// Project : NexoraEnterprise
+// Layer   : Domain
+// Module  : Common
+// File    : ValueObject.cs
+// -----------------------------------------------------------------------------
+//
+// Represents the base class for all value objects in the domain model.
+// Value objects are compared by the values of their properties rather
+// than by identity.
+//
+// -----------------------------------------------------------------------------
+
+namespace NexoraEnterprise.Domain.Common;
 
 /// <summary>
-/// Represents a value object in the domain.
+/// Represents the base class for all value objects.
 /// </summary>
-/// <remarks>
-/// Value objects are compared by the values of their properties rather than by identity.
-/// They are immutable(Cannot be changed after creation) and do not have an identifier.
-/// </remarks>
 public abstract class ValueObject : IEquatable<ValueObject>
 {
     /// <summary>
-    /// Returns the components that participate in equality comparison.
+    /// Returns the collection of values that participate in equality.
     /// </summary>
-    /// <returns>The equality components.</returns>
+    /// <returns>
+    /// A sequence of values used for equality comparison.
+    /// </returns>
     protected abstract IEnumerable<object?> GetEqualityComponents();
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override bool Equals(object? obj)
     {
         return Equals(obj as ValueObject);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool Equals(ValueObject? other)
     {
         if (other is null)
+        {
             return false;
+        }
 
         if (ReferenceEquals(this, other))
+        {
             return true;
+        }
 
         if (GetType() != other.GetType())
+        {
             return false;
+        }
 
         return GetEqualityComponents()
             .SequenceEqual(other.GetEqualityComponents());
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override int GetHashCode()
     {
-        var hash = new HashCode();
+        HashCode hash = new();
 
         foreach (var component in GetEqualityComponents())
         {
@@ -54,23 +72,11 @@ public abstract class ValueObject : IEquatable<ValueObject>
     /// Determines whether two value objects are equal.
     /// </summary>
     public static bool operator ==(ValueObject? left, ValueObject? right)
-    {
-        return EqualityComparer<ValueObject>.Default.Equals(left, right);
-    }
+        => Equals(left, right);
 
     /// <summary>
     /// Determines whether two value objects are not equal.
     /// </summary>
     public static bool operator !=(ValueObject? left, ValueObject? right)
-    {
-        return !(left == right);
-    }
-
-    /// <summary>
-    /// Returns the string representation of the value object.
-    /// </summary>
-    public override string ToString()
-    {
-        return $"{GetType().Name}";
-    }
+        => !(left == right);
 }

@@ -2,26 +2,29 @@
 // Project : NexoraEnterprise
 // Layer   : Domain
 // Module  : Rules
-// File    : TenantNameCannotBeEmptyRule.cs
+// File    : TenantNameLengthRule.cs
 // -----------------------------------------------------------------------------
 
 namespace NexoraEnterprise.Domain.Rules.Tenants;
 
 /// <summary>
-/// Ensures that a tenant name has been provided.
+/// Ensures that the tenant name length is within the allowed range.
 /// </summary>
-public sealed class TenantNameCannotBeEmptyRule : BusinessRule
+public sealed class TenantNameLengthRule : BusinessRule
 {
+    private const int MinimumLength = 3;
+    private const int MaximumLength = 200;
+
     private readonly string? _name;
 
     /// <summary>
     /// Initializes a new instance of the
-    /// <see cref="TenantNameCannotBeEmptyRule"/> class.
+    /// <see cref="TenantNameLengthRule"/> class.
     /// </summary>
     /// <param name="name">
     /// Tenant name.
     /// </param>
-    public TenantNameCannotBeEmptyRule(string? name)
+    public TenantNameLengthRule(string? name)
     {
         _name = name;
     }
@@ -29,14 +32,20 @@ public sealed class TenantNameCannotBeEmptyRule : BusinessRule
     /// <inheritdoc />
     public override bool IsBroken()
     {
-        return string.IsNullOrWhiteSpace(_name);
+        if (string.IsNullOrWhiteSpace(_name))
+        {
+            return false;
+        }
+
+        return _name.Length < MinimumLength ||
+               _name.Length > MaximumLength;
     }
 
     /// <inheritdoc />
     public override string Message =>
-        "Tenant name cannot be null, empty, or whitespace.";
+        $"Tenant name must be between {MinimumLength} and {MaximumLength} characters.";
 
     /// <inheritdoc />
     public override string ErrorCode =>
-        "TENANT_NAME_EMPTY";
+        "TENANT_NAME_LENGTH_INVALID";
 }

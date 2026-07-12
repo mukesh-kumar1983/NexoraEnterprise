@@ -28,5 +28,10 @@ public enum TenantStatus
     /// The tenant has been permanently deactivated.
     /// This is a terminal state and cannot be activated again.
     /// </summary>
-    Inactive = 3
+    Inactive = 3,
+
+   /// <summary>
+   /// The tenant has been permanently deleted.
+   /// </summary>
+    IsDeleted = 4
 }

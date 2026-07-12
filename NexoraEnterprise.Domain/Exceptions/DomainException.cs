@@ -1,31 +1,28 @@
-﻿namespace NexoraEnterprise.Domain.Exceptions;
+﻿
+// -----------------------------------------------------------------------------
+// Project : NexoraEnterprise
+// Layer   : Domain
+// Module  : Exceptions
+// File    : DomainException.cs
+// -----------------------------------------------------------------------------
+
+namespace NexoraEnterprise.Domain.Exceptions;
 
 /// <summary>
-/// Represents errors that occur when a domain rule is violated.
+/// Represents the base exception for the domain layer.
 /// </summary>
-public class DomainException : Exception
+public abstract class DomainException : Exception
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DomainException"/> class.
-    /// </summary>
-    public DomainException()
+    protected DomainException()
     {
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DomainException"/> class
-    /// with a specified error message.
-    /// </summary>
-    public DomainException(string message)
+    protected DomainException(string message)
         : base(message)
     {
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DomainException"/> class
-    /// with a specified error message and inner exception.
-    /// </summary>
-    public DomainException(string message, Exception innerException)
+    protected DomainException(string message, Exception innerException)
         : base(message, innerException)
     {
     }

@@ -2,26 +2,29 @@
 // Project : NexoraEnterprise
 // Layer   : Domain
 // Module  : Rules
-// File    : TenantCodeCannotBeEmptyRule.cs
+// File    : TenantCodeLengthRule.cs
 // -----------------------------------------------------------------------------
 
 namespace NexoraEnterprise.Domain.Rules.Tenants;
 
 /// <summary>
-/// Ensures that a tenant code has been provided.
+/// Ensures that the tenant code length is within the allowed range.
 /// </summary>
-public sealed class TenantCodeCannotBeEmptyRule : BusinessRule
+public sealed class TenantCodeLengthRule : BusinessRule
 {
+    private const int MinimumLength = 3;
+    private const int MaximumLength = 20;
+
     private readonly string? _code;
 
     /// <summary>
     /// Initializes a new instance of the
-    /// <see cref="TenantCodeCannotBeEmptyRule"/> class.
+    /// <see cref="TenantCodeLengthRule"/> class.
     /// </summary>
     /// <param name="code">
     /// Tenant code.
     /// </param>
-    public TenantCodeCannotBeEmptyRule(string? code)
+    public TenantCodeLengthRule(string? code)
     {
         _code = code;
     }
@@ -29,14 +32,20 @@ public sealed class TenantCodeCannotBeEmptyRule : BusinessRule
     /// <inheritdoc />
     public override bool IsBroken()
     {
-        return string.IsNullOrWhiteSpace(_code);
+        if (string.IsNullOrWhiteSpace(_code))
+        {
+            return false;
+        }
+
+        return _code.Length < MinimumLength ||
+               _code.Length > MaximumLength;
     }
 
     /// <inheritdoc />
     public override string Message =>
-        "Tenant code cannot be null, empty, or whitespace.";
+        $"Tenant code must be between {MinimumLength} and {MaximumLength} characters.";
 
     /// <inheritdoc />
     public override string ErrorCode =>
-        "TENANT_CODE_EMPTY";
+        "TENANT_CODE_LENGTH_INVALID";
 }
